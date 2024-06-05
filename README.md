@@ -1,8 +1,8 @@
-![PyPI](https://img.shields.io/pypi/v/starlingbank.svg)
+[![PyPI](https://img.shields.io/pypi/v/starlingbank.svg)](https://pypi.org/project/starlingbank/)
 
 # starlingbank
 
-An **unofficial** python package that provides access to parts of the Starling bank API. Designed to be used for personal use (i.e. using personal access tokens).
+An **unofficial** python package that provides access to parts of the Starling Bank API. Designed to be used for personal use (i.e. using personal access tokens).
 
 - [starlingbank](#starlingbank)
   - [Change Log](#change-log)
@@ -14,6 +14,7 @@ An **unofficial** python package that provides access to parts of the Starling b
     - [Initialisation](#initialisation)
     - [Data](#data)
       - [Basic Account Data](#basic-account-data)
+      - [Account Holder Data](#account-holder-data)
       - [Balance Data](#balance-data)
     - [Spaces](#spaces)
       - [Update a Space](#update-a-space)
@@ -56,6 +57,9 @@ To use all of the functionality this package affords, the following API scopes a
 * savings-goal-transfer:read
 * savings-goal-transfer:create
 * space:read
+* account-holder-name:read
+* customer:read
+* account-holder-type:read
 
 ### Import
 ```python
@@ -104,6 +108,17 @@ Properties:
 Example:
 ```python
 print(my_account.account_identifier)
+```
+
+#### Account Holder Data
+Properties:
+
+* account_holder_uid
+* account_holder_name
+* account_holder_type
+
+```python
+print(my_account.account_holder_name)
 ```
 
 #### Balance Data

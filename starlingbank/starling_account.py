@@ -24,6 +24,30 @@ class StarlingAccount:
         self.bank_identifier = response.get("bankIdentifier")
         self.iban = response.get("iban")
         self.bic = response.get("bic")
+        
+    def update_account_holder_data(self) -> None:
+        """Get account holder information for the account."""
+        response = get(
+            _url("/account-holder", self._sandbox),
+            headers=self._auth_headers,
+        )
+        response.raise_for_status()
+        response = response.json()
+
+        self.account_holder_uid = response.get("accountHolderUid")
+        self.account_holder_type = response.get("accountHolderType")
+        self._update_account_holder_name()
+        
+    def _update_account_holder_name(self) -> None:
+        """Get account holder name for the account."""
+        response = get(
+            _url("/account-holder/name", self._sandbox),
+            headers=self._auth_headers,
+        )
+        response.raise_for_status()
+        response = response.json()
+
+        self.account_holder_name = response.get("accountHolderName")
 
     def update_balance_data(self) -> None:
         """Get the latest balance information for the account."""
@@ -133,6 +157,11 @@ class StarlingAccount:
         self.bank_identifier = None
         self.iban = None
         self.bic = None
+        
+        # Account Holder
+        self.account_holder_name = None
+        self.account_holder_uid = None
+        self.account_holder_type = None
 
         # Balance Data
         self.cleared_balance = None
