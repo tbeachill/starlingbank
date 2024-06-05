@@ -7,6 +7,44 @@ from .utils import _url
 
 class StarlingAccount:
     """Representation of a Starling Account."""
+    
+    def __init__(
+        self, api_token: str, update: bool = False, sandbox: bool = False
+    ) -> None:
+        """Call to initialise a StarlingAccount object."""
+        self._api_token = api_token
+        self._sandbox = sandbox
+        self._auth_headers = {
+            "Authorization": "Bearer {0}".format(self._api_token),
+            "Content-Type": "application/json",
+        }
+        self._set_basic_account_data()
+
+        # Account Data
+        self.account_identifier = None
+        self.bank_identifier = None
+        self.iban = None
+        self.bic = None
+        
+        # Account Holder
+        self.account_holder_name = None
+        self.account_holder_uid = None
+        self.account_holder_type = None
+
+        # Balance Data
+        self.cleared_balance = None
+        self.effective_balance = None
+        self.pending_transactions = None
+        self.accepted_overdraft = None
+        
+        # Spaces Data
+        self.spending_spaces = {}  # type: Dict[str, SpendingSpace]
+        self.saving_spaces = {}   # type: Dict[str, SavingSpace]
+        
+        if update:
+            self.update_account_data()
+            self.update_balance_data()
+            self.update_spaces_data()
 
     def update_account_data(self) -> None:
         """Get basic information for the account."""
@@ -140,40 +178,3 @@ class StarlingAccount:
         self.currency = account["currency"]
         self.created_at = account["createdAt"]
 
-    def __init__(
-        self, api_token: str, update: bool = False, sandbox: bool = False
-    ) -> None:
-        """Call to initialise a StarlingAccount object."""
-        self._api_token = api_token
-        self._sandbox = sandbox
-        self._auth_headers = {
-            "Authorization": "Bearer {0}".format(self._api_token),
-            "Content-Type": "application/json",
-        }
-        self._set_basic_account_data()
-
-        # Account Data
-        self.account_identifier = None
-        self.bank_identifier = None
-        self.iban = None
-        self.bic = None
-        
-        # Account Holder
-        self.account_holder_name = None
-        self.account_holder_uid = None
-        self.account_holder_type = None
-
-        # Balance Data
-        self.cleared_balance = None
-        self.effective_balance = None
-        self.pending_transactions = None
-        self.accepted_overdraft = None
-        
-        # Spaces Data
-        self.spending_spaces = {}  # type: Dict[str, SpendingSpace]
-        self.saving_spaces = {}   # type: Dict[str, SavingSpace]
-        
-        if update:
-            self.update_account_data()
-            self.update_balance_data()
-            self.update_spaces_data()
