@@ -4,6 +4,7 @@ from .saving_space import SavingSpace
 from .spending_space import SpendingSpace
 from .constants import *
 from .utils import _url
+from base64 import b64decode
 
 class StarlingAccount:
     """Representation of a Starling Account."""
@@ -178,3 +179,20 @@ class StarlingAccount:
         self.currency = account["currency"]
         self.created_at = account["createdAt"]
 
+    def get_profile_image(self, filename: str = None) -> None:
+        """Download the profile image associated with an account holder."""
+        if filename is None:
+            filename = "{0}.png".format(self.name)
+
+        endpoint = "/account-holder/{0}/profile-image".format(
+            self.account_holder_uid
+        )
+
+        response = get(
+            _url(endpoint, self._sandbox), headers=self._auth_headers
+        )
+        response.raise_for_status()
+
+        base64_image = response.json()["base64EncodedPhoto"]
+        with open(filename, "wb") as file:
+            file.write(b64decode(base64_image))

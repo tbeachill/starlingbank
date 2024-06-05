@@ -60,6 +60,7 @@ To use all of the functionality this package affords, the following API scopes a
 * account-holder-name:read
 * customer:read
 * account-holder-type:read
+* profile-image:read
 
 ### Import
 ```python
