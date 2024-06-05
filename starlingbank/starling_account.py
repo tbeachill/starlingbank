@@ -2,9 +2,11 @@ from requests import get
 from typing import Dict
 from .saving_space import SavingSpace
 from .spending_space import SpendingSpace
+from .spending_insights import SpendingInsights
 from .constants import *
 from .utils import _url
 from base64 import b64decode
+from datetime import datetime
 
 class StarlingAccount:
     """Representation of a Starling Account."""
@@ -42,10 +44,14 @@ class StarlingAccount:
         self.spending_spaces = {}  # type: Dict[str, SpendingSpace]
         self.saving_spaces = {}   # type: Dict[str, SavingSpace]
         
+        # Spending Insights
+        self.spending_insights = {}  # type: Dict[str, SpendingInsights]
+        
         if update:
             self.update_account_data()
             self.update_balance_data()
             self.update_spaces_data()
+            self.update_insights_data()
 
     def update_account_data(self) -> None:
         """Get basic information for the account."""
@@ -107,6 +113,19 @@ class StarlingAccount:
         ]
         self.accepted_overdraft = response["acceptedOverdraft"]["minorUnits"]
 
+    def update_insights_data(self, year=None) -> None:
+        """Get spending insights for each month of the specified year,
+        or the current year if not specified."""
+        
+        query_year = datetime.now().year if year is None else year
+        end_month = 12 if query_year < datetime.now().year else datetime.now().month
+        for month in range(1, end_month + 1):
+            self.spending_insights[month] = SpendingInsights(
+                self._auth_headers, self._sandbox, self._account_uid,
+                month, query_year
+            )
+            self.spending_insights[month].update_insights()        
+    
     def update_spaces_data(self) -> None:
         """Get the latest Spaces information for the account."""
         response = get(
