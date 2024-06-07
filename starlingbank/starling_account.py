@@ -4,6 +4,7 @@ from .saving_space import SavingSpace
 from .spending_space import SpendingSpace
 from .spending_insights import SpendingInsights
 from .direct_debit import DirectDebit
+from .standing_order import StandingOrder
 from .constants import *
 from .utils import _url
 from base64 import b64decode
@@ -22,6 +23,12 @@ class StarlingAccount:
             "Authorization": "Bearer {0}".format(self._api_token),
             "Content-Type": "application/json",
         }
+        self.account_type = None
+        self.account_name = None
+        self.default_category = None
+        self.currency = None
+        self.created_at = None
+        
         self._set_basic_account_data()
 
         # Account Data
@@ -50,6 +57,8 @@ class StarlingAccount:
         
         self.direct_debits = {}  # type: Dict[str, DirectDebit]
         
+        self.standing_orders = {}  # type: Dict[str, StandingOrder]
+        
         if update:
             self.update_account_data()
             self.update_balance_data()
@@ -73,6 +82,24 @@ class StarlingAccount:
         self.bank_identifier = response.get("bankIdentifier")
         self.iban = response.get("iban")
         self.bic = response.get("bic")
+        
+        self._update_account_info()
+        
+    def _update_account_info(self) -> None:
+        """Get the account information."""
+        response = get(
+            _url("/accounts/", self._sandbox),
+            headers=self._auth_headers,
+        )
+        response.raise_for_status()
+        response = response.json()
+        
+        accounts = response.get("accounts")[0]
+        self.default_category = accounts.get("defaultCategory")
+        self.created_at = accounts.get("createdAt")
+        self.account_type = accounts.get("accountType")
+        self.account_name = accounts.get("name")
+        self.currency = accounts.get("currency")
         
     def update_account_holder_data(self) -> None:
         """Get account holder information for the account."""
@@ -149,6 +176,56 @@ class StarlingAccount:
                 uid
             )
             self.direct_debits[uid].update_insights()
+            
+    def update_standing_order_data(self) -> None:
+        """Get the Standing Orders for the account."""
+        print(self.default_category)
+        response = get(
+            _url(
+                "/payments/local/account/{0}/category/{1}/standing-orders".format(
+                    self._account_uid, self.default_category
+                ),
+                self._sandbox,
+            ),
+            headers=self._auth_headers,
+        )
+        response.raise_for_status()
+        response = response.json()
+        
+        for order in response.get("standingOrders", []):
+            payment_order_uid = order.get("paymentOrderUid")
+            self.standing_orders[payment_order_uid] = StandingOrder(
+                self._auth_headers, self._sandbox, self._account_uid,
+                payment_order_uid, self.default_category
+            )
+            self.standing_orders[payment_order_uid].update_insights()
+            
+        self.update_spaces_data()
+        
+        for space_uid in self.spending_spaces.keys():
+            self._get_space_standing_orders(space_uid)
+            
+    def _get_space_standing_orders(self, space_uid: str) -> None:
+        """Get the Standing Orders for a specific space."""
+        response = get(
+            _url(
+                "/payments/local/account/{0}/category/{1}/standing-orders".format(
+                    self._account_uid, space_uid
+                ),
+                self._sandbox,
+            ),
+            headers=self._auth_headers,
+        )
+        response.raise_for_status()
+        response = response.json()
+        
+        for order in response.get("standingOrders", []):
+            payment_order_uid = order.get("paymentOrderUid")
+            self.standing_orders[payment_order_uid] = StandingOrder(
+                self._auth_headers, self._sandbox, self._account_uid,
+                payment_order_uid, space_uid
+            )
+            self.standing_orders[payment_order_uid].update_insights()
     
     def update_spaces_data(self) -> None:
         """Get the latest Spaces information for the account."""
@@ -221,6 +298,7 @@ class StarlingAccount:
         self._account_uid = account["accountUid"]
         self.currency = account["currency"]
         self.created_at = account["createdAt"]
+        self._update_account_info()
 
     def get_profile_image(self, filename: str = None) -> None:
         """Download the profile image associated with an account holder."""
