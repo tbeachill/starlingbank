@@ -61,6 +61,8 @@ To use all of the functionality this package affords, the following API scopes a
 * customer:read
 * account-holder-type:read
 * profile-image:read
+* transaction:read
+* mandate:read
 
 ### Import
 ```python

@@ -3,6 +3,7 @@ from typing import Dict
 from .saving_space import SavingSpace
 from .spending_space import SpendingSpace
 from .spending_insights import SpendingInsights
+from .direct_debit import DirectDebit
 from .constants import *
 from .utils import _url
 from base64 import b64decode
@@ -47,11 +48,14 @@ class StarlingAccount:
         # Spending Insights
         self.spending_insights = {}  # type: Dict[str, SpendingInsights]
         
+        self.direct_debits = {}  # type: Dict[str, DirectDebit]
+        
         if update:
             self.update_account_data()
             self.update_balance_data()
             self.update_spaces_data()
             self.update_insights_data()
+            self.update_direct_debit_data()
 
     def update_account_data(self) -> None:
         """Get basic information for the account."""
@@ -124,7 +128,27 @@ class StarlingAccount:
                 self._auth_headers, self._sandbox, self._account_uid,
                 month, query_year
             )
-            self.spending_insights[month].update_insights()        
+            self.spending_insights[month].update_insights()
+            
+    def update_direct_debit_data(self) -> None:
+        """Get the Direct Debit mandates for the account."""
+        response = get(
+            _url(
+                "/direct-debit/mandates".format(self._account_uid),
+                self._sandbox,
+            ),
+            headers=self._auth_headers,
+        )
+        response.raise_for_status()
+        response = response.json()
+        
+        for mandate in response.get("mandates", []):
+            uid = mandate.get("uid")
+            self.direct_debits[uid] = DirectDebit(
+                self._auth_headers, self._sandbox, self._account_uid,
+                uid
+            )
+            self.direct_debits[uid].update_insights()
     
     def update_spaces_data(self) -> None:
         """Get the latest Spaces information for the account."""
