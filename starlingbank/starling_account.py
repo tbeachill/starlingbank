@@ -37,10 +37,17 @@ class StarlingAccount:
         self.iban = None
         self.bic = None
         
-        # Account Holder
-        self.account_holder_name = None
+        # Account Holder Data
         self.account_holder_uid = None
         self.account_holder_type = None
+        
+        # Individual Data
+        self.title = None
+        self.first_name = None
+        self.last_name = None
+        self.date_of_birth = None
+        self.email = None
+        self.phone = None
 
         # Balance Data
         self.cleared_balance = None
@@ -65,6 +72,7 @@ class StarlingAccount:
             self.update_spaces_data()
             self.update_insights_data()
             self.update_direct_debit_data()
+            self.update_individual_data()
 
     def update_account_data(self) -> None:
         """Get basic information for the account."""
@@ -112,18 +120,22 @@ class StarlingAccount:
 
         self.account_holder_uid = response.get("accountHolderUid")
         self.account_holder_type = response.get("accountHolderType")
-        self._update_account_holder_name()
         
-    def _update_account_holder_name(self) -> None:
-        """Get account holder name for the account."""
+    def update_individual_data(self) -> None:
+        """Get individual information for the account."""
         response = get(
-            _url("/account-holder/name", self._sandbox),
+            _url("/account-holder/individual", self._sandbox),
             headers=self._auth_headers,
         )
         response.raise_for_status()
         response = response.json()
 
-        self.account_holder_name = response.get("accountHolderName")
+        self.title = response.get("title")
+        self.first_name = response.get("firstName")
+        self.last_name = response.get("lastName")
+        self.date_of_birth = response.get("dateOfBirth")
+        self.email = response.get("email")
+        self.phone = response.get("phone")
 
     def update_balance_data(self) -> None:
         """Get the latest balance information for the account."""
