@@ -6,6 +6,7 @@ from .spending_space import SpendingSpace
 from .spending_insights import SpendingInsights
 from .direct_debit import DirectDebit
 from .standing_order import StandingOrder
+from .payee import Payee
 from .card import Card
 from .address import Address
 from .constants import *
@@ -61,6 +62,8 @@ class StarlingAccount:
         self.settle_up_link = None
         
         self.cards = {}  # type: Dict[str, Card]
+        
+        self.payees = {}  # type: Dict[str, Payee]
 
         # Balance Data
         self.cleared_balance = None
@@ -90,6 +93,7 @@ class StarlingAccount:
             self.update_address_data()
             self.update_card_data()
             self.update_settle_up_data()
+            self.update_payee_data()
 
     def update_account_data(self) -> None:
         """Get basic information for the account."""
@@ -209,6 +213,21 @@ class StarlingAccount:
         
         self.settle_up_status = response.get("status")
         self.settle_up_link = response.get("settleUpLink")
+        
+    def update_payee_data(self) -> None:
+        """Get the payee information for the account."""
+        response = get(
+            _url("/payees", self._sandbox), headers=self._auth_headers
+        )
+        response.raise_for_status()
+        response = response.json()
+        
+        for payee in response.get("payees", []):
+            payee_uid = payee.get("payeeUid")
+            self.payees[payee_uid] = Payee(
+                self._auth_headers, self._sandbox, self._account_uid, payee_uid
+            )
+            self.payees[payee_uid].update()
     
     def update_balance_data(self) -> None:
         """Get the latest balance information for the account."""
