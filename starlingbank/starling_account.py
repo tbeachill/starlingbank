@@ -6,6 +6,7 @@ from .spending_space import SpendingSpace
 from .spending_insights import SpendingInsights
 from .direct_debit import DirectDebit
 from .standing_order import StandingOrder
+from .card import Card
 from .address import Address
 from .constants import *
 from .utils import _url
@@ -54,6 +55,8 @@ class StarlingAccount:
         # Address Data
         self.current_address = None
         self.previous_addresses = [] # type: List[Address]
+        
+        self.cards = {}  # type: Dict[str, Card]
 
         # Balance Data
         self.cleared_balance = None
@@ -173,6 +176,21 @@ class StarlingAccount:
                 )
             )
 
+    def update_card_data(self) -> None:
+        """Get the card information for the account."""
+        response = get(
+            _url("/cards", self._sandbox), headers=self._auth_headers
+        )
+        response.raise_for_status()
+        response = response.json()
+        
+        for card in response.get("cards", []):
+            card_uid = card.get("cardUid")
+            self.cards[card_uid] = Card(
+                self._auth_headers, self._sandbox, self._account_uid, card_uid
+            )
+            self.cards[card_uid].update()
+    
     def update_balance_data(self) -> None:
         """Get the latest balance information for the account."""
         response = get(
