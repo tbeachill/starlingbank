@@ -1,7 +1,7 @@
 from requests import get
 from typing import Dict
 from typing import List
-from .saving_space import SavingSpace
+from .savings_goal import SavingsGoal
 from .spending_space import SpendingSpace
 from .spending_insights import SpendingInsights
 from .direct_debit import DirectDebit
@@ -76,7 +76,7 @@ class StarlingAccount:
         
         # Spaces Data
         self.spending_spaces = {}  # type: Dict[str, SpendingSpace]
-        self.saving_spaces = {}   # type: Dict[str, SavingSpace]
+        self.savings_goals = {}   # type: Dict[str, SavingsGoal]
         
         # Spending Insights
         self.spending_insights = {}  # type: Dict[str, SpendingInsights]
@@ -352,7 +352,7 @@ class StarlingAccount:
         response.raise_for_status()
         response = response.json()
         self._update_spending_spaces(response)
-        self._update_saving_spaces(response)
+        self._update_savings_goals(response)
         
     def _update_spending_spaces(self, response) -> None:
         response_spending_spaces = response.get("spendingSpaces", {})
@@ -376,27 +376,27 @@ class StarlingAccount:
             if uid not in returned_uids:
                 self.spending_spaces.pop(uid)
     
-    def _update_saving_spaces(self, response) -> None:
-        response_saving_spaces = response.get("savingsGoals", {})
+    def _update_savings_goals(self, response) -> None:
+        response_savings_goals = response.get("savingsGoals", {})
         returned_uids = []
         
         # New / update
-        for space in response_saving_spaces:
-            uid = space.get("savingsGoalUid")
+        for goal in response_savings_goals:
+            uid = goal.get("savingsGoalUid")
             returned_uids.append(uid)
 
-            # Intiialise new SavingSpace object if new
-            if uid not in self.saving_spaces:
-                self.saving_spaces[uid] = SavingSpace(
+            # Intiialise new SavingsGoal object if new
+            if uid not in self.savings_goals:
+                self.savings_goals[uid] = SavingsGoal(
                     self._auth_headers, self._sandbox, self._account_uid
                 )
 
-            self.saving_spaces[uid].update(space)
+            self.savings_goals[uid].update(goal)
 
-        # Forget about Saving Spaces if the UID isn't returned by Starling
-        for uid in list(self.saving_spaces):
+        # Forget about Savings Goals if the UID isn't returned by Starling
+        for uid in list(self.savings_goals):
             if uid not in returned_uids:
-                self.saving_spaces.pop(uid)
+                self.savings_goals.pop(uid)
 
     def _set_basic_account_data(self):
         response = get(

@@ -7,8 +7,8 @@ from .constants import *
 from .utils import _url
 from typing import List
 
-class SavingSpace:
-    """Representation of a Saving Space."""
+class SavingsGoal:
+    """Representation of a Savings Goal (Saving Space)."""
     
     def __init__(
         self, auth_headers: Dict, sandbox: bool, account_uid: str
@@ -26,17 +26,27 @@ class SavingSpace:
         self.saved_percentage = None
         self.sort_order = None
         self.state = None
+        self.transfer_uid = None
         
         # Recurring Transfer Data
-        self.transfer_uid = None
-        self.reccurence_rule = {} # type: Dict[str, str]
+        self.recurrence_start_date = None
+        self.recurrence_frequency = None
+        self.recurrence_interval = None
+        self.recurrence_count = None
+        self.recurrence_until_date = None
+        self.recurrence_week_start = None
+        self.recurrence_days = [] # type: List[str]
+        self.recurrence_month_day = None
+        self.recurrence_month_week = None
+        
         self.next_payment_date = None
         self.currency = None
         self.minor_units = None
+        self.top_up = None
         
-    def update(self, space: Dict = None) -> None:
-        """Update a single Saving Space."""
-        if space is None:
+    def update(self, goal: Dict = None) -> None:
+        """Update a single Savings Goal."""
+        if goal is None:
             endpoint = "/account/{0}/savings-goals/{1}".format(
                 self._account_uid, self.uid
             )
@@ -44,22 +54,22 @@ class SavingSpace:
                 _url(endpoint, self._sandbox), headers=self._auth_headers
             )
             response.raise_for_status()
-            space = response.json()
+            goal = response.json()
 
-        self.uid = space.get("savingsGoalUid")
-        self.name = space.get("name")
+        self.uid = goal.get("savingsGoalUid")
+        self.name = goal.get("name")
 
-        target = space.get("target", {})
+        target = goal.get("target", {})
         self.target_currency = target.get("currency")
         self.target_minor_units = target.get("minorUnits")
 
-        total_saved = space.get("totalSaved", {})
+        total_saved = goal.get("totalSaved", {})
         self.total_saved_currency = total_saved.get("currency")
         self.total_saved_minor_units = total_saved.get("minorUnits")
         
-        self.saved_percentage = space.get("savedPercentage")
-        self.state = space.get("state")
-        self.sort_order = space.get("sortOrder")
+        self.saved_percentage = goal.get("savedPercentage")
+        self.state = goal.get("state")
+        self.sort_order = goal.get("sortOrder")
         self._update_transfer_data()
         
     def _update_transfer_data(self) -> None:
@@ -74,18 +84,29 @@ class SavingSpace:
             return
         
         response.raise_for_status()
-        space = response.json()
+        goal = response.json()
 
-        self.transfer_uid = space.get("transferUid")
-        self.recurrence_rule = space.get("recurrenceRule", {})
-        self.next_payment_date = space.get("nextPaymentDate")
+        self.transfer_uid = goal.get("transferUid")
+        self.next_payment_date = goal.get("nextPaymentDate")
+        self.top_up = goal.get("topUp")
         
-        currency_amount = space.get("currencyAndAmount", {})
+        recurrence = goal.get("recurrenceRule", {})
+        self.recurrence_start_date = recurrence.get("startDate")
+        self.recurrence_frequency = recurrence.get("frequency")
+        self.recurrence_interval = recurrence.get("interval")
+        self.recurrence_count = recurrence.get("count")
+        self.recurrence_until_date = recurrence.get("untilDate")
+        self.recurrence_week_start = recurrence.get("weekStart")
+        self.recurrence_days = recurrence.get("days", [])
+        self.recurrence_month_day = recurrence.get("monthDay")
+        self.recurrence_month_week = recurrence.get("monthWeek")
+        
+        currency_amount = goal.get("currencyAndAmount", {})
         self.currency = currency_amount.get("currency")
-        self.minor_units = currency_amount.get("minorUnits")  
+        self.minor_units = currency_amount.get("minorUnits")
         
     def deposit(self, deposit_minor_units: int) -> None:
-        """Add funds to a Saving Space."""
+        """Add funds to a Savings Goal."""
         endpoint = "/account/{0}/savings-goals/{1}/add-money/{2}".format(
             self._account_uid, self.uid, uuid4()
         )
@@ -107,7 +128,7 @@ class SavingSpace:
         self.update()
 
     def withdraw(self, withdraw_minor_units: int) -> None:
-        """Withdraw funds from a Saving Space."""
+        """Withdraw funds from a Savings Goal."""
         endpoint = "/account/{0}/savings-goals/{1}/withdraw-money/{2}".format(
             self._account_uid, self.uid, uuid4()
         )
@@ -129,7 +150,7 @@ class SavingSpace:
         self.update()
 
     def get_image(self, filename: str = None) -> None:
-        """Download the photo associated with a Saving Space."""
+        """Download the photo associated with a Savings Goal."""
         if filename is None:
             filename = "{0}.png".format(self.name)
 
