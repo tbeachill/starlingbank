@@ -292,7 +292,6 @@ class StarlingAccount:
             
     def update_standing_order_data(self) -> None:
         """Get the Standing Orders for the account."""
-        print(self.default_category)
         response = get(
             _url(
                 "/payments/local/account/{0}/category/{1}/standing-orders".format(
