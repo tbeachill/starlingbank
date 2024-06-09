@@ -1,4 +1,4 @@
-from typing import List, Dict
+from typing import Dict
 from .constants import *
 from .utils import _url
 from requests import get
