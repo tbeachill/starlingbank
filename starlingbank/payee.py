@@ -101,6 +101,8 @@ class PayeeAccount:
         self.payments = {} # type: Dict[str, PayeePayment]
         self.payments_since = payments_since
         
+        self.scheduled_payments = {} # type: Dict[str, PayeeScheduledPayment]
+        
     def update(self, response) -> None:
         for payee in response.get("payees", []):
             if payee.get("payeeUid") == self.payee_uid:
@@ -115,6 +117,7 @@ class PayeeAccount:
                         self.bank_identifier_type = account.get("bankIdentifierType")
                         self.last_references = account.get("lastReferences")
                         self._update_payee_payments()
+                        self._update_payee_scheduled_payments()
                         return
                     
     def _update_payee_payments(self) -> None:
@@ -138,6 +141,24 @@ class PayeeAccount:
                 self.payee_uid, payment_uid, self.account_uid
             )
             self.payments[payment_uid].update(response)
+            
+    def _update_payee_scheduled_payments(self) -> None:
+        """Get payee scheduled payments."""
+        response = get(
+            _url("/payees/{0}/account/{1}/scheduled-payments".format(
+                self.payee_uid, self.account_uid), self._sandbox),
+            headers=self._auth_headers
+        )
+        response.raise_for_status()
+        response = response.json()
+        
+        for payment in response.get("scheduledPayments", []):
+            payment_uid = payment.get("paymentOrderUid")
+            self.scheduled_payments[payment_uid] = PayeeScheduledPayment(
+                self._auth_headers, self._sandbox, self._account_uid,
+                self.payee_uid, payment_uid, self.account_uid
+            )
+            self.scheduled_payments[payment_uid].update(response)
 
 class PayeePayment:
     """Representation of a payee payment."""
@@ -172,4 +193,71 @@ class PayeePayment:
                 payment_amount = payment.get("paymentAmount")
                 self.currency = payment_amount.get("currency")
                 self.minor_units = payment_amount.get("minorUnits")
+                return
+
+class PayeeScheduledPayment:
+    """Representation of a payee scheduled payment."""
+    
+    def __init__(
+        self, auth_headers: Dict, sandbox: bool, account_uid: str,
+        payee_uid: str, payment_uid: str, payee_account_uid: str
+    ) -> None:
+        self._auth_headers = auth_headers       
+        self._sandbox = sandbox
+        self._account_uid = account_uid
+
+        # Payee Payment Data
+        self.payee_uid = payee_uid
+        self.payment_order_uid = payment_uid
+        self.payee_account_uid = payee_account_uid
+
+        self.account_holder_uid = None
+        self.category_uid = None
+        self.reference = None
+        self.start_date = None
+        self.next_date = None
+        self.end_date = None
+        self.payment_type = None
+        self.spending_category = None
+        
+        self.next_payment_currency = None
+        self.next_payment_minor_units = None
+        
+        self.recurrence_start_date = None
+        self.recurrence_frequency = None
+        self.recurrence_interval = None
+        self.recurrence_count = None
+        self.recurrence_until_date = None
+        self.recurrence_week_start = None
+        self.recurrence_days = [] # type: List[str]
+        self.recurrence_month_day = None
+        self.recurrence_month_week = None
+        
+    def update(self, response) -> None:
+        """Update payee scheduled payment."""
+        for payment in response.get("scheduledPayments", []):
+            if payment.get("paymentOrderUid") == self.payment_order_uid:
+                self.account_holder_uid = payment.get("accountHolderUid")
+                self.category_uid = payment.get("categoryUid")
+                self.reference = payment.get("reference")
+                self.start_date = payment.get("startDate")
+                self.next_date = payment.get("nextDate")
+                self.end_date = payment.get("endDate")
+                self.payment_type = payment.get("paymentType")
+                self.spending_category = payment.get("spendingCategory")
+                
+                next_payment = payment.get("nextPaymentAmount")
+                self.next_payment_currency = next_payment.get("currency")
+                self.next_payment_minor_units = next_payment.get("minorUnits")
+                
+                recurrence = payment.get("recurrenceRule")
+                self.recurrence_start_date = recurrence.get("startDate")
+                self.recurrence_frequency = recurrence.get("frequency")
+                self.recurrence_interval = recurrence.get("interval")
+                self.recurrence_count = recurrence.get("count")
+                self.recurrence_until_date = recurrence.get("untilDate")
+                self.recurrence_week_start = recurrence.get("weekStart")
+                self.recurrence_days = recurrence.get("days", [])
+                self.recurrence_month_day = recurrence.get("monthDay")
+                self.recurrence_month_week = recurrence.get("monthWeek")
                 return
