@@ -1,10 +1,12 @@
 from requests import get
 from typing import Dict
+from typing import List
 from .saving_space import SavingSpace
 from .spending_space import SpendingSpace
 from .spending_insights import SpendingInsights
 from .direct_debit import DirectDebit
 from .standing_order import StandingOrder
+from .address import Address
 from .constants import *
 from .utils import _url
 from base64 import b64decode
@@ -51,6 +53,7 @@ class StarlingAccount:
         
         # Address Data
         self.current_address = None
+        self.previous_addresses = [] # type: List[Address]
 
         # Balance Data
         self.cleared_balance = None
@@ -76,6 +79,7 @@ class StarlingAccount:
             self.update_insights_data()
             self.update_direct_debit_data()
             self.update_individual_data()
+            self.update_address_data()
 
     def update_account_data(self) -> None:
         """Get basic information for the account."""
@@ -150,14 +154,24 @@ class StarlingAccount:
         response = response.json()
 
         current = response.get("current")
-        self.current_address = {
-            "line1": current.get("line1"),
-            "line2": current.get("line2"),
-            "line3": current.get("line3"),
-            "town": current.get("postTown"),
-            "postcode": current.get("postCode"),
-            "country": current.get("countryCode"),
-        }
+        self.current_address = Address(
+            self._auth_headers, self._sandbox, self._account_uid,
+            current.get("line1"), current.get("line2"), current.get("line3"),
+            current.get("postTown"), current.get("postCode"),
+            current.get("countryCode")
+        )
+        
+        self.previous_addresses = []
+        
+        for previous in response.get("previous", []):
+            self.previous_addresses.append(
+                Address(
+                    self._auth_headers, self._sandbox, self._account_uid,
+                    previous.get("line1"), previous.get("line2"),
+                    previous.get("line3"), previous.get("postTown"),
+                    previous.get("postCode"), previous.get("countryCode")
+                )
+            )
 
     def update_balance_data(self) -> None:
         """Get the latest balance information for the account."""
