@@ -5,6 +5,7 @@ from base64 import b64decode
 from typing import Dict
 from .constants import *
 from .utils import _url
+from typing import List
 
 class SavingSpace:
     """Representation of a Saving Space."""
@@ -25,6 +26,13 @@ class SavingSpace:
         self.saved_percentage = None
         self.sort_order = None
         self.state = None
+        
+        # Recurring Transfer Data
+        self.transfer_uid = None
+        self.reccurence_rule = {} # type: Dict[str, str]
+        self.next_payment_date = None
+        self.currency = None
+        self.minor_units = None
         
     def update(self, space: Dict = None) -> None:
         """Update a single Saving Space."""
@@ -52,6 +60,29 @@ class SavingSpace:
         self.saved_percentage = space.get("savedPercentage")
         self.state = space.get("state")
         self.sort_order = space.get("sortOrder")
+        self._update_transfer_data()
+        
+    def _update_transfer_data(self) -> None:
+        """Update the recurring transfer rules for a single Saving Space."""
+        endpoint = "/account/{0}/savings-goals/{1}/recurring-transfer".format(
+            self._account_uid, self.uid
+        )
+        response = get(
+            _url(endpoint, self._sandbox), headers=self._auth_headers
+        )
+        if response.status_code == 404:
+            return
+        
+        response.raise_for_status()
+        space = response.json()
+
+        self.transfer_uid = space.get("transferUid")
+        self.recurrence_rule = space.get("recurrenceRule", {})
+        self.next_payment_date = space.get("nextPaymentDate")
+        
+        currency_amount = space.get("currencyAndAmount", {})
+        self.currency = currency_amount.get("currency")
+        self.minor_units = currency_amount.get("minorUnits")  
         
     def deposit(self, deposit_minor_units: int) -> None:
         """Add funds to a Saving Space."""
