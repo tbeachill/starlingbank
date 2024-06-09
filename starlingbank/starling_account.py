@@ -48,6 +48,9 @@ class StarlingAccount:
         self.date_of_birth = None
         self.email = None
         self.phone = None
+        
+        # Address Data
+        self.current_address = None
 
         # Balance Data
         self.cleared_balance = None
@@ -136,6 +139,25 @@ class StarlingAccount:
         self.date_of_birth = response.get("dateOfBirth")
         self.email = response.get("email")
         self.phone = response.get("phone")
+        
+    def update_address_data(self) -> None:
+        """Get address information for the account."""
+        response = get(
+            _url("/addresses", self._sandbox),
+            headers=self._auth_headers,
+        )
+        response.raise_for_status()
+        response = response.json()
+
+        current = response.get("current")
+        self.current_address = {
+            "line1": current.get("line1"),
+            "line2": current.get("line2"),
+            "line3": current.get("line3"),
+            "town": current.get("postTown"),
+            "postcode": current.get("postCode"),
+            "country": current.get("countryCode"),
+        }
 
     def update_balance_data(self) -> None:
         """Get the latest balance information for the account."""
