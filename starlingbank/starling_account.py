@@ -268,7 +268,7 @@ class StarlingAccount:
                 self._auth_headers, self._sandbox, self._account_uid,
                 month, query_year
             )
-            self.spending_insights[month].update_insights()
+            self.spending_insights[month].update()
             
     def update_direct_debit_data(self) -> None:
         """Get the Direct Debit mandates for the account."""
@@ -288,7 +288,7 @@ class StarlingAccount:
                 self._auth_headers, self._sandbox, self._account_uid,
                 uid
             )
-            self.direct_debits[uid].update_insights()
+            self.direct_debits[uid].update()
             
     def update_standing_order_data(self) -> None:
         """Get the Standing Orders for the account."""
@@ -311,7 +311,7 @@ class StarlingAccount:
                 self._auth_headers, self._sandbox, self._account_uid,
                 payment_order_uid, self.default_category
             )
-            self.standing_orders[payment_order_uid].update_insights()
+            self.standing_orders[payment_order_uid].update()
             
         self.update_spaces_data()
         
@@ -338,7 +338,7 @@ class StarlingAccount:
                 self._auth_headers, self._sandbox, self._account_uid,
                 payment_order_uid, space_uid
             )
-            self.standing_orders[payment_order_uid].update_insights()
+            self.standing_orders[payment_order_uid].update()
     
     def update_spaces_data(self) -> None:
         """Get the latest Spaces information for the account."""
