@@ -2,6 +2,7 @@ from typing import List, Dict
 from .constants import *
 from .utils import _url
 from requests import get
+from base64 import b64decode
 
 class Payee:
     """Representation of a payee."""
@@ -56,6 +57,22 @@ class Payee:
                     )
                     self.payee_accounts[payee_account_uid].update(response, self.uid)
                 return
+            
+    def get_payee_image(self, filename: str = None) -> str:
+        """Get the payee image."""
+        if filename is None:
+            filename = "{0}.png".format(self.name)
+            
+        response = get(
+            _url("/payees/{0}/image".format(
+                self.uid), self._sandbox),
+            headers=self._auth_headers
+        )
+        response.raise_for_status()
+        
+        base64_image = response.json()["base64EncodedPhoto"]
+        with open(filename, "wb") as file:
+            file.write(b64decode(base64_image))
 
 class PayeeAccount:
     """Representation of a payee account."""
