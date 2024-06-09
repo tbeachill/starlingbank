@@ -34,7 +34,7 @@ class StandingOrder:
         self.updated_at = None
         self.spending_category = None
         
-    def update_insights(self) -> None:
+    def update(self) -> None:
         """Update standing order."""
         response = get(
             _url("/payments/local/account/{0}/category/{1}/standing-orders/{2}".format(

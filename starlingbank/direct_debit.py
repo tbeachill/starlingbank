@@ -33,7 +33,7 @@ class DirectDebit:
         self.last_payment_currency = None
         self.last_payment_minor_units = None
         
-    def update_insights(self) -> None:
+    def update(self) -> None:
         """Update mandate."""
         response = get(
             _url("/direct-debit/mandates/{0}".format(

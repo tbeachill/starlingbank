@@ -27,7 +27,7 @@ class SpendingInsights:
         self.spending_categories = {} # type: Dict[str, Dict[str, str]]
         self.counter_parties = {} # type: Dict[str, Dict[str, str]]
         
-    def update_insights(self) -> None:
+    def update(self) -> None:
         """Update all spending insights."""
         self._update_spending_categories()
         self._update_counter_parties()
