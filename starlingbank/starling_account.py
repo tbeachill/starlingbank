@@ -56,6 +56,10 @@ class StarlingAccount:
         self.current_address = None
         self.previous_addresses = [] # type: List[Address]
         
+        # Settle Up Data
+        self.settle_up_status = None
+        self.settle_up_link = None
+        
         self.cards = {}  # type: Dict[str, Card]
 
         # Balance Data
@@ -81,8 +85,11 @@ class StarlingAccount:
             self.update_spaces_data()
             self.update_insights_data()
             self.update_direct_debit_data()
+            self.update_standing_order_data()
             self.update_individual_data()
             self.update_address_data()
+            self.update_card_data()
+            self.update_settle_up_data()
 
     def update_account_data(self) -> None:
         """Get basic information for the account."""
@@ -190,6 +197,18 @@ class StarlingAccount:
                 self._auth_headers, self._sandbox, self._account_uid, card_uid
             )
             self.cards[card_uid].update()
+            
+    def update_settle_up_data(self) -> None:
+        """Get the settle up information for the account."""
+        response = get(
+            _url("/settle-up/profile", self._sandbox),
+            headers=self._auth_headers
+        )
+        response.raise_for_status()
+        response = response.json()
+        
+        self.settle_up_status = response.get("status")
+        self.settle_up_link = response.get("settleUpLink")
     
     def update_balance_data(self) -> None:
         """Get the latest balance information for the account."""
