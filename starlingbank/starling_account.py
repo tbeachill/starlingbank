@@ -6,6 +6,7 @@ from .spending_space import SpendingSpace
 from .spending_insights import SpendingInsights
 from .direct_debit import DirectDebit
 from .standing_order import StandingOrder
+from .round_up import RoundUp
 from .payee import Payee
 from .card import Card
 from .address import Address
@@ -64,6 +65,8 @@ class StarlingAccount:
         self.cards = {}  # type: Dict[str, Card]
         
         self.payees = {}  # type: Dict[str, Payee]
+        
+        self.round_up = None
 
         # Balance Data
         self.cleared_balance = None
@@ -94,6 +97,7 @@ class StarlingAccount:
             self.update_card_data()
             self.update_settle_up_data()
             self.update_payee_data()
+            self.update_round_up_data()
 
     def update_account_data(self) -> None:
         """Get basic information for the account."""
@@ -201,6 +205,11 @@ class StarlingAccount:
                 self._auth_headers, self._sandbox, self._account_uid, card_uid
             )
             self.cards[card_uid].update()
+            
+    def update_round_up_data(self) -> None:
+        """Get the round up information for the account."""
+        self.round_up = RoundUp(self._auth_headers, self._sandbox, self._account_uid)
+        self.round_up.update()
             
     def update_settle_up_data(self) -> None:
         """Get the settle up information for the account."""
