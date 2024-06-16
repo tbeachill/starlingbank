@@ -4,6 +4,7 @@ from base64 import b64decode
 from typing import Dict, List
 from requests import get, put
 from .utils import _url
+from .constants import GET_TIMEOUT, PUT_TIMEOUT
 
 
 class SavingsGoal:
@@ -60,7 +61,11 @@ class SavingsGoal:
         """
         if goal is None:
             endpoint = f"/account/{self._account_uid}/savings-goals/{self.uid}"
-            response = get(_url(endpoint, self._sandbox), headers=self._auth_headers)
+            response = get(
+                _url(endpoint, self._sandbox),
+                headers=self._auth_headers,
+                timeout=GET_TIMEOUT,
+            )
             response.raise_for_status()
             goal = response.json()
 
@@ -90,7 +95,11 @@ class SavingsGoal:
         endpoint = (
             "/account/{self._account_uid}/savings-goals/{self.uid}/recurring-transfer"
         )
-        response = get(_url(endpoint, self._sandbox), headers=self._auth_headers)
+        response = get(
+            _url(endpoint, self._sandbox),
+            headers=self._auth_headers,
+            timeout=GET_TIMEOUT,
+        )
         if response.status_code == 404:
             return
 
@@ -140,6 +149,7 @@ class SavingsGoal:
             _url(endpoint, self._sandbox),
             headers=self._auth_headers,
             data=json_dumps(body),
+            timeout=PUT_TIMEOUT,
         )
         response.raise_for_status()
 
@@ -167,6 +177,7 @@ class SavingsGoal:
             _url(endpoint, self._sandbox),
             headers=self._auth_headers,
             data=json_dumps(body),
+            timeout=PUT_TIMEOUT,
         )
         response.raise_for_status()
 
@@ -185,7 +196,11 @@ class SavingsGoal:
             filename = f"{self.name}.png"
 
         endpoint = "/account/{self._account_uid}/savings-goals/{self.uid}/photo"
-        response = get(_url(endpoint, self._sandbox), headers=self._auth_headers)
+        response = get(
+            _url(endpoint, self._sandbox),
+            headers=self._auth_headers,
+            timeout=GET_TIMEOUT,
+        )
         response.raise_for_status()
 
         base64_image = response.json()["base64EncodedPhoto"]

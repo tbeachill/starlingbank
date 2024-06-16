@@ -2,6 +2,7 @@ from typing import Dict
 from calendar import month_name
 from requests import get
 from .utils import _url
+from .constants import GET_TIMEOUT
 
 
 class SpendingInsights:
@@ -58,6 +59,7 @@ class SpendingInsights:
                 self._sandbox,
             ),
             headers=self._auth_headers,
+            timeout=GET_TIMEOUT,
         )
         response.raise_for_status()
         response = response.json()
@@ -90,6 +92,7 @@ class SpendingInsights:
                 self._sandbox,
             ),
             headers=self._auth_headers,
+            timeout=GET_TIMEOUT,
         )
         response.raise_for_status()
         response = response.json()

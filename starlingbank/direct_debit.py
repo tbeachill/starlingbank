@@ -1,6 +1,7 @@
 from typing import Dict
 from requests import get
 from .utils import _url
+from .constants import GET_TIMEOUT
 
 
 class DirectDebit:
@@ -51,6 +52,7 @@ class DirectDebit:
         response = get(
             _url(f"/direct-debit/mandates/{self.mandate_uid}", self._sandbox),
             headers=self._auth_headers,
+            timeout=GET_TIMEOUT,
         )
         response.raise_for_status()
         response = response.json()

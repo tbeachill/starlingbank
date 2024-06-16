@@ -13,6 +13,7 @@ from .spending_insights import SpendingInsights
 from .spending_space import SpendingSpace
 from .standing_order import StandingOrder
 from .utils import _url
+from .constants import GET_TIMEOUT
 
 
 class StarlingAccount:
@@ -121,6 +122,7 @@ class StarlingAccount:
                 self._sandbox,
             ),
             headers=self._auth_headers,
+            timeout=GET_TIMEOUT,
         )
         response.raise_for_status()
         response = response.json()
@@ -142,6 +144,7 @@ class StarlingAccount:
         response = get(
             _url("/accounts/", self._sandbox),
             headers=self._auth_headers,
+            timeout=GET_TIMEOUT,
         )
         response.raise_for_status()
         response = response.json()
@@ -163,6 +166,7 @@ class StarlingAccount:
         response = get(
             _url("/account-holder", self._sandbox),
             headers=self._auth_headers,
+            timeout=GET_TIMEOUT,
         )
         response.raise_for_status()
         response = response.json()
@@ -179,6 +183,7 @@ class StarlingAccount:
         response = get(
             _url("/account-holder/individual", self._sandbox),
             headers=self._auth_headers,
+            timeout=GET_TIMEOUT,
         )
         response.raise_for_status()
         response = response.json()
@@ -199,6 +204,7 @@ class StarlingAccount:
         response = get(
             _url("/addresses", self._sandbox),
             headers=self._auth_headers,
+            timeout=GET_TIMEOUT,
         )
         response.raise_for_status()
         response = response.json()
@@ -239,7 +245,11 @@ class StarlingAccount:
         Required Scopes:
             `card:read`
         """
-        response = get(_url("/cards", self._sandbox), headers=self._auth_headers)
+        response = get(
+            _url("/cards", self._sandbox),
+            headers=self._auth_headers,
+            timeout=GET_TIMEOUT,
+        )
         response.raise_for_status()
         response = response.json()
 
@@ -266,7 +276,9 @@ class StarlingAccount:
             `settle-up:read`
         """
         response = get(
-            _url("/settle-up/profile", self._sandbox), headers=self._auth_headers
+            _url("/settle-up/profile", self._sandbox),
+            headers=self._auth_headers,
+            timeout=GET_TIMEOUT,
         )
         response.raise_for_status()
         response = response.json()
@@ -282,7 +294,11 @@ class StarlingAccount:
             `scheduled-payment:read`
             `payee-transaction:read`
         """
-        response = get(_url("/payees", self._sandbox), headers=self._auth_headers)
+        response = get(
+            _url("/payees", self._sandbox),
+            headers=self._auth_headers,
+            timeout=GET_TIMEOUT,
+        )
         response.raise_for_status()
         response = response.json()
 
@@ -305,6 +321,7 @@ class StarlingAccount:
                 self._sandbox,
             ),
             headers=self._auth_headers,
+            timeout=GET_TIMEOUT,
         )
         response.raise_for_status()
 
@@ -347,6 +364,7 @@ class StarlingAccount:
                 self._sandbox,
             ),
             headers=self._auth_headers,
+            timeout=GET_TIMEOUT,
         )
         response.raise_for_status()
         response = response.json()
@@ -371,6 +389,7 @@ class StarlingAccount:
                 self._sandbox,
             ),
             headers=self._auth_headers,
+            timeout=GET_TIMEOUT,
         )
         response.raise_for_status()
         response = response.json()
@@ -407,6 +426,7 @@ class StarlingAccount:
                 self._sandbox,
             ),
             headers=self._auth_headers,
+            timeout=GET_TIMEOUT,
         )
         response.raise_for_status()
         response = response.json()
@@ -436,6 +456,7 @@ class StarlingAccount:
                 self._sandbox,
             ),
             headers=self._auth_headers,
+            timeout=GET_TIMEOUT,
         )
         response.raise_for_status()
         response = response.json()
@@ -510,7 +531,11 @@ class StarlingAccount:
             `account:read`
             `account-list:read`
         """
-        response = get(_url("/accounts", self._sandbox), headers=self._auth_headers)
+        response = get(
+            _url("/accounts", self._sandbox),
+            headers=self._auth_headers,
+            timeout=GET_TIMEOUT,
+        )
         response.raise_for_status()
         response = response.json()
 
@@ -536,7 +561,11 @@ class StarlingAccount:
 
         endpoint = f"/account-holder/{self.account_holder_uid}/profile-image"
 
-        response = get(_url(endpoint, self._sandbox), headers=self._auth_headers)
+        response = get(
+            _url(endpoint, self._sandbox),
+            headers=self._auth_headers,
+            timeout=GET_TIMEOUT,
+        )
         response.raise_for_status()
 
         base64_image = response.json()["base64EncodedPhoto"]

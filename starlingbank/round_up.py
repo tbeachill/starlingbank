@@ -1,6 +1,7 @@
 from typing import Dict
 from requests import get
 from .utils import _url
+from .constants import GET_TIMEOUT
 
 
 class RoundUp:
@@ -38,6 +39,7 @@ class RoundUp:
         response = get(
             _url(f"/feed/account/{self._account_uid}/round-up", self._sandbox),
             headers=self._auth_headers,
+            timeout=GET_TIMEOUT,
         )
         response.raise_for_status()
         response = response.json()

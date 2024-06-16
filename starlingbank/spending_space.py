@@ -2,6 +2,7 @@ from base64 import b64decode
 from typing import Dict
 from requests import get
 from .utils import _url
+from .constants import GET_TIMEOUT
 
 
 class SpendingSpace:
@@ -38,7 +39,11 @@ class SpendingSpace:
         """
         if space is None:
             endpoint = f"/account/{self._account_uid}/spaces/spending/{self.uid}"
-            response = get(_url(endpoint, self._sandbox), headers=self._auth_headers)
+            response = get(
+                _url(endpoint, self._sandbox),
+                headers=self._auth_headers,
+                timeout=GET_TIMEOUT,
+            )
             response.raise_for_status()
             space = response.json()
 
@@ -68,7 +73,11 @@ class SpendingSpace:
 
         endpoint = f"/account/{self._account_uid}/spaces/{self.uid}/photo"
 
-        response = get(_url(endpoint, self._sandbox), headers=self._auth_headers)
+        response = get(
+            _url(endpoint, self._sandbox),
+            headers=self._auth_headers,
+            timeout=GET_TIMEOUT,
+        )
         response.raise_for_status()
 
         base64_image = response.json()["base64EncodedPhoto"]

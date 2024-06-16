@@ -3,6 +3,7 @@ from base64 import b64decode
 from datetime import datetime, timedelta
 from requests import get
 from .utils import _url
+from .constants import GET_TIMEOUT
 
 
 class Payee:
@@ -48,7 +49,11 @@ class Payee:
             `scheduled-payment:read`
             `payee-transaction:read`
         """
-        response = get(_url("/payees", self._sandbox), headers=self._auth_headers)
+        response = get(
+            _url("/payees", self._sandbox),
+            headers=self._auth_headers,
+            timeout=GET_TIMEOUT,
+        )
         response.raise_for_status()
         response = response.json()
 
@@ -90,6 +95,7 @@ class Payee:
         response = get(
             _url(f"/payees/{self.uid}/image", self._sandbox),
             headers=self._auth_headers,
+            timeout=GET_TIMEOUT,
         )
         response.raise_for_status()
 
@@ -181,6 +187,7 @@ class PayeeAccount:
                 self._sandbox,
             ),
             headers=self._auth_headers,
+            timeout=GET_TIMEOUT,
         )
         response.raise_for_status()
         response = response.json()
@@ -209,6 +216,7 @@ class PayeeAccount:
                 self._sandbox,
             ),
             headers=self._auth_headers,
+            timeout=GET_TIMEOUT,
         )
         response.raise_for_status()
         response = response.json()
