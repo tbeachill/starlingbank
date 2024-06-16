@@ -41,13 +41,14 @@ class StandingOrder:
         self.payee_uid = None
         self.payee_account_uid = None
 
-        self.standing_order_recurrence = None
         self.start_date = None
         self.frequency = None
         self.interval = None
         self.count = None
+        self.until_date = None
 
         self.next_date = None
+        self.cancelled_at = None
         self.updated_at = None
         self.spending_category = None
 
@@ -69,25 +70,23 @@ class StandingOrder:
         response.raise_for_status()
         response = response.json()
 
-        self.reference = response.get("reference")
-        self.status = response.get("status")
-        self.source = response.get("source")
-        self.created = response.get("created")
-        self.cancelled = response.get("cancelled")
-        self.next_date = response.get("nextDate")
-        self.last_date = response.get("lastDate")
-        self.originator_name = response.get("originatorName")
-        self.originator_uid = response.get("originatorUid")
-        self.merchant_uid = response.get("merchantUid")
         self.category_uid = response.get("categoryUid")
+        self.payment_order_uid = response.get("paymentOrderUid")
+        self.reference = response.get("reference")
+        self.payee_uid = response.get("payeeUid")
+        self.payee_account_uid = response.get("payeeAccountUid")
+        self.next_date = response.get("nextDate")
+        self.cancelled_at = response.get("cancelledAt")
+        self.updated_at = response.get("updatedAt")
+        self.spending_category = response.get("spendingCategory")
 
-        last_payment = response.get("lastPayment")
+        amount = response.get("amount", {})
+        self.currency = amount.get("currency")
+        self.minor_units = amount.get("minorUnits")
 
-        if not last_payment:
-            return
-
-        self.last_payment_date = last_payment.get("lastDate")
-
-        last_amount = last_payment.get("lastAmount")
-        self.last_payment_currency = last_amount.get("currency")
-        self.last_payment_minor_units = last_amount.get("minorUnits")
+        recurrence = response.get("standingOrderRecurrence", {})
+        self.start_date = recurrence.get("startDate")
+        self.frequency = recurrence.get("frequency")
+        self.interval = recurrence.get("interval")
+        self.count = recurrence.get("count")
+        self.until_date = recurrence.get("untilDate")
