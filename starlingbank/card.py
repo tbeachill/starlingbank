@@ -1,16 +1,25 @@
 from typing import Dict
-from .constants import *
-from .utils import _url
 from requests import get
+from .utils import _url
+
 
 class Card:
-    """Representation of a card."""
-        
+    """Representation of a card.
+
+    Required Scopes:
+        `card:read`
+
+    Args:
+        auth_headers (dict of {str, str}): Starling API authentication headers.
+        sandbox (bool): True if sandbox mode, False otherwise.
+        account_uid (str): Account UID.
+        card_uid (str): Card UID.
+    """
+
     def __init__(
-        self, auth_headers: Dict, sandbox: bool, account_uid: str,
-        card_uid: str
+        self, auth_headers: Dict, sandbox: bool, account_uid: str, card_uid: str
     ) -> None:
-        self._auth_headers = auth_headers       
+        self._auth_headers = auth_headers
         self._sandbox = sandbox
         self._account_uid = account_uid
 
@@ -29,18 +38,20 @@ class Card:
         self.activation_requested = None
         self.activated = None
         self.end_of_card_number = None
+        self.card_association_uid = None
         self.currency_flags_enabled = None
-        self.currency_flags = {} # type: Dict[str, str]
-        
+        self.currency_flags = {}  # type: Dict[str, str]
+
     def update(self) -> None:
-        """Update card."""
-        response = get(
-            _url("/cards".format(), self._sandbox),
-            headers=self._auth_headers
-        )
+        """Update card.
+
+        Required Scopes:
+            `card:read`
+        """
+        response = get(_url("/cards", self._sandbox), headers=self._auth_headers)
         response.raise_for_status()
         response = response.json()
-        
+
         for card in response.get("cards", []):
             if card.get("cardUid") == self.card_uid:
                 self.public_token = card.get("publicToken")
@@ -57,7 +68,9 @@ class Card:
                 self.activated = card.get("activated")
                 self.end_of_card_number = card.get("endOfCardNumber")
                 self.card_association_uid = card.get("cardAssociationUid")
-                
+
                 for currency in card.get("currencyFlags", []):
-                    self.currency_flags[currency.get("currency")] = currency.get("enabled")
+                    self.currency_flags[currency.get("currency")] = currency.get(
+                        "enabled"
+                    )
                 return

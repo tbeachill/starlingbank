@@ -1,4 +1,5 @@
 """Provides limited access to the Starling bank API."""
+
 from .address import Address
 from .card import Card
 from .direct_debit import DirectDebit
@@ -11,7 +12,14 @@ from .standing_order import StandingOrder
 from .starling_account import StarlingAccount
 
 __all__ = [
-    "Address", "Card", "DirectDebit", "Payee",
-    "RoundUp", "SavingsGoal", "SpendingInsights",
-    "SpendingSpace", "StandingOrder", "StarlingAccount"
+    "Address",
+    "Card",
+    "DirectDebit",
+    "Payee",
+    "RoundUp",
+    "SavingsGoal",
+    "SpendingInsights",
+    "SpendingSpace",
+    "StandingOrder",
+    "StarlingAccount",
 ]
